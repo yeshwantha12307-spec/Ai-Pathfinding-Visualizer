@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<title>AI Pathfinding Visualizer</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h1>AI Pathfinding Visualizer</h1>
+
+<div class="controls">
+
+<button onclick="setMode('start')">Start</button> <button onclick="setMode('goal')">Goal</button> <button onclick="setMode('wall')">Wall</button>
+
+<select id="algorithm">
+<option value="bfs">BFS</option>
+<option value="dfs">DFS</option>
+<option value="astar">A*</option>
+</select>
+
+<label>Speed</label> <input type="range" id="speed" min="1" max="100" value="30">
+
+<button onclick="runAlgorithm()">Run AI</button> <button onclick="generateMaze()">Maze</button> <button onclick="resetGrid()">Reset</button>
+
+</div>
+
+<p>Nodes Explored: <span id="nodes">0</span></p>
+
+<div id="grid"></div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
