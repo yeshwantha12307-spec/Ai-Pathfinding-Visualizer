@@ -1,11 +1,10 @@
-const rows=25
-const cols=25
+const rows=20
+const cols=20
 
 let grid=[]
 let start=null
 let goal=null
 let mode=""
-let explored=0
 
 const gridDiv=document.getElementById("grid")
 
@@ -18,13 +17,7 @@ cell.classList.add("cell")
 cell.dataset.row=r
 cell.dataset.col=c
 
-cell.onmousedown=cellClick
-
-cell.onmouseover=e=>{
-if(e.buttons==1 && mode=="wall"){
-cell.classList.add("wall")
-}
-}
+cell.onclick=cellClick
 
 gridDiv.appendChild(cell)
 grid.push(cell)
@@ -38,19 +31,19 @@ mode=m
 
 function cellClick(){
 
-let r=this.dataset.row
-let c=this.dataset.col
+let r=parseInt(this.dataset.row)
+let c=parseInt(this.dataset.col)
 
 if(mode=="start"){
 clearClass("start")
 this.classList.add("start")
-start=[parseInt(r),parseInt(c)]
+start=[r,c]
 }
 
 if(mode=="goal"){
 clearClass("goal")
 this.classList.add("goal")
-goal=[parseInt(r),parseInt(c)]
+goal=[r,c]
 }
 
 if(mode=="wall"){
@@ -71,19 +64,48 @@ function resetGrid(){
 location.reload()
 }
 
-function sleep(){
-let speed=document.getElementById("speed").value
-return new Promise(r=>setTimeout(r,101-speed))
+function sleep(ms){
+return new Promise(resolve=>setTimeout(resolve,ms))
 }
 
-function updateNodes(){
-document.getElementById("nodes").innerText=explored
+function valid(r,c,visited){
+
+if(r<0||c<0||r>=rows||c>=cols) return false
+
+let cell=getCell(r,c)
+
+if(cell.classList.contains("wall")) return false
+
+if(visited.has(r+","+c)) return false
+
+return true
+}
+
+async function drawPath(path){
+
+for(let p of path){
+
+let cell=getCell(p[0],p[1])
+
+if(!cell.classList.contains("start") && !cell.classList.contains("goal")){
+cell.classList.add("path")
+await sleep(20)
+}
+
+}
+
 }
 
 async function runAlgorithm(){
 
-explored=0
 let algo=document.getElementById("algorithm").value
+
+if(!start || !goal){
+alert("Set Start and Goal first")
+return
+}
+
+clearSearch()
 
 if(algo=="bfs") runBFS()
 if(algo=="dfs") runDFS()
@@ -91,11 +113,17 @@ if(algo=="astar") runAStar()
 
 }
 
+function clearSearch(){
+grid.forEach(c=>{
+c.classList.remove("visited")
+c.classList.remove("path")
+})
+}
+
 async function runBFS(){
 
 let queue=[[start]]
 let visited=new Set()
-
 let moves=[[1,0],[-1,0],[0,1],[0,-1]]
 
 while(queue.length){
@@ -118,14 +146,9 @@ if(valid(nr,nc,visited)){
 visited.add(nr+","+nc)
 
 let next=getCell(nr,nc)
-
-if(!next.classList.contains("goal"))
 next.classList.add("visited")
 
-explored++
-updateNodes()
-
-await sleep()
+await sleep(10)
 
 queue.push([...path,[nr,nc]])
 
@@ -141,7 +164,6 @@ async function runDFS(){
 
 let stack=[[start]]
 let visited=new Set()
-
 let moves=[[1,0],[-1,0],[0,1],[0,-1]]
 
 while(stack.length){
@@ -164,14 +186,9 @@ if(valid(nr,nc,visited)){
 visited.add(nr+","+nc)
 
 let next=getCell(nr,nc)
-
-if(!next.classList.contains("goal"))
 next.classList.add("visited")
 
-explored++
-updateNodes()
-
-await sleep()
+await sleep(10)
 
 stack.push([...path,[nr,nc]])
 
@@ -185,20 +202,24 @@ stack.push([...path,[nr,nc]])
 
 async function runAStar(){
 
-let open=[[start,0]]
+let open=[{pos:start,path:[start],f:0}]
 let visited=new Set()
 
 while(open.length){
 
-open.sort((a,b)=>a[1]-b[1])
+open.sort((a,b)=>a.f-b.f)
 
-let [path,cost]=open.shift()
-let [r,c]=path[path.length-1]
+let current=open.shift()
+
+let [r,c]=current.pos
+let path=current.path
 
 if(r==goal[0] && c==goal[1]){
 drawPath(path)
 return
 }
+
+visited.add(r+","+c)
 
 let moves=[[1,0],[-1,0],[0,1],[0,-1]]
 
@@ -209,56 +230,23 @@ let nc=c+m[1]
 
 if(valid(nr,nc,visited)){
 
-visited.add(nr+","+nc)
-
 let g=path.length
 let h=Math.abs(goal[0]-nr)+Math.abs(goal[1]-nc)
-
 let f=g+h
 
 let next=getCell(nr,nc)
-
-if(!next.classList.contains("goal"))
 next.classList.add("visited")
 
-explored++
-updateNodes()
+await sleep(10)
 
-await sleep()
-
-open.push([[...path,[nr,nc]],f])
-
-}
-
-}
+open.push({
+pos:[nr,nc],
+path:[...path,[nr,nc]],
+f:f
+})
 
 }
 
-}
-
-function valid(r,c,visited){
-
-if(r<0||c<0||r>=rows||c>=cols) return false
-
-let cell=getCell(r,c)
-
-if(cell.classList.contains("wall")) return false
-
-if(visited.has(r+","+c)) return false
-
-return true
-
-}
-
-async function drawPath(path){
-
-for(let p of path){
-
-let cell=getCell(p[0],p[1])
-
-if(!cell.classList.contains("start") && !cell.classList.contains("goal")){
-cell.classList.add("path")
-await sleep()
 }
 
 }

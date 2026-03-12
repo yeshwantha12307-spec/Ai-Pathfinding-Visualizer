@@ -25,14 +25,14 @@ cursor:pointer;
 
 #grid{
 display:grid;
-grid-template-columns:repeat(25,25px);
+grid-template-columns:repeat(20,30px);
 justify-content:center;
 margin-top:20px;
 }
 
 .cell{
-width:25px;
-height:25px;
+width:30px;
+height:30px;
 border:1px solid #222;
 background:#1a1a1a;
 }
