@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html>
 <head>
 <meta charset="UTF-8">
@@ -13,7 +12,10 @@
 
 <div class="controls">
 
-<button onclick="setMode('start')">Start</button> <button onclick="setMode('goal')">Goal</button> <button onclick="setMode('wall')">Wall</button>
+<button onclick="setMode('start')">Start</button>
+<button onclick="setMode('goal')">Goal</button>
+<button onclick="setMode('wall')">Wall</button>
+<button onclick="setMode('erase')">Remove Wall</button>
 
 <select id="algorithm">
 <option value="bfs">BFS</option>
@@ -21,7 +23,15 @@
 <option value="astar">A*</option>
 </select>
 
-<button onclick="runAlgorithm()">Run AI</button> <button onclick="generateMaze()">Maze</button> <button onclick="resetGrid()">Reset</button>
+<select onchange="setSpeed(this.value)">
+<option value="5">Fast</option>
+<option value="20" selected>Medium</option>
+<option value="80">Slow</option>
+</select>
+
+<button onclick="runAlgorithm()">Run AI</button>
+<button onclick="generateMaze()">Maze</button>
+<button onclick="clearGrid()">Clear</button>
 
 </div>
 

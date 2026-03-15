@@ -1,10 +1,11 @@
-const rows=20
-const cols=20
+const rows = 20
+const cols = 20
 
 let grid=[]
 let start=null
 let goal=null
 let mode=""
+let speed=20
 
 const gridDiv=document.getElementById("grid")
 
@@ -29,6 +30,10 @@ function setMode(m){
 mode=m
 }
 
+function setSpeed(val){
+speed=parseInt(val)
+}
+
 function cellClick(){
 
 let r=parseInt(this.dataset.row)
@@ -50,6 +55,10 @@ if(mode=="wall"){
 this.classList.add("wall")
 }
 
+if(mode=="erase"){
+this.classList.remove("wall")
+}
+
 }
 
 function clearClass(cls){
@@ -60,8 +69,15 @@ function getCell(r,c){
 return grid.find(x=>x.dataset.row==r && x.dataset.col==c)
 }
 
-function resetGrid(){
-location.reload()
+function clearGrid(){
+
+grid.forEach(cell=>{
+cell.classList.remove("wall","visited","path","start","goal")
+})
+
+start=null
+goal=null
+
 }
 
 function sleep(ms){
@@ -89,11 +105,17 @@ let cell=getCell(p[0],p[1])
 
 if(!cell.classList.contains("start") && !cell.classList.contains("goal")){
 cell.classList.add("path")
-await sleep(20)
+await sleep(speed)
 }
 
 }
 
+}
+
+function clearSearch(){
+grid.forEach(c=>{
+c.classList.remove("visited","path")
+})
 }
 
 async function runAlgorithm(){
@@ -107,23 +129,19 @@ return
 
 clearSearch()
 
-if(algo=="bfs") runBFS()
-if(algo=="dfs") runDFS()
-if(algo=="astar") runAStar()
+if(algo=="bfs") await runBFS()
+if(algo=="dfs") await runDFS()
+if(algo=="astar") await runAStar()
 
-}
-
-function clearSearch(){
-grid.forEach(c=>{
-c.classList.remove("visited")
-c.classList.remove("path")
-})
 }
 
 async function runBFS(){
 
 let queue=[[start]]
 let visited=new Set()
+
+visited.add(start.join(","))
+
 let moves=[[1,0],[-1,0],[0,1],[0,-1]]
 
 while(queue.length){
@@ -132,7 +150,7 @@ let path=queue.shift()
 let [r,c]=path[path.length-1]
 
 if(r==goal[0] && c==goal[1]){
-drawPath(path)
+await drawPath(path)
 return
 }
 
@@ -148,7 +166,7 @@ visited.add(nr+","+nc)
 let next=getCell(nr,nc)
 next.classList.add("visited")
 
-await sleep(10)
+await sleep(speed)
 
 queue.push([...path,[nr,nc]])
 
@@ -164,6 +182,9 @@ async function runDFS(){
 
 let stack=[[start]]
 let visited=new Set()
+
+visited.add(start.join(","))
+
 let moves=[[1,0],[-1,0],[0,1],[0,-1]]
 
 while(stack.length){
@@ -172,7 +193,7 @@ let path=stack.pop()
 let [r,c]=path[path.length-1]
 
 if(r==goal[0] && c==goal[1]){
-drawPath(path)
+await drawPath(path)
 return
 }
 
@@ -188,7 +209,7 @@ visited.add(nr+","+nc)
 let next=getCell(nr,nc)
 next.classList.add("visited")
 
-await sleep(10)
+await sleep(speed)
 
 stack.push([...path,[nr,nc]])
 
@@ -200,14 +221,30 @@ stack.push([...path,[nr,nc]])
 
 }
 
+function heuristic(a,b){
+
+let dx=Math.abs(a[0]-b[0])
+let dy=Math.abs(a[1]-b[1])
+
+return Math.sqrt(dx*dx+dy*dy)
+
+}
+
 async function runAStar(){
 
-let open=[{pos:start,path:[start],f:0}]
+let open=[{pos:start,path:[start],g:0}]
 let visited=new Set()
+
+let moves=[
+[1,0],[-1,0],[0,1],[0,-1],
+[1,1],[-1,-1],[1,-1],[-1,1]
+]
 
 while(open.length){
 
-open.sort((a,b)=>a.f-b.f)
+open.sort((a,b)=>
+(a.g+heuristic(a.pos,goal))-(b.g+heuristic(b.pos,goal))
+)
 
 let current=open.shift()
 
@@ -215,13 +252,11 @@ let [r,c]=current.pos
 let path=current.path
 
 if(r==goal[0] && c==goal[1]){
-drawPath(path)
+await drawPath(path)
 return
 }
 
 visited.add(r+","+c)
-
-let moves=[[1,0],[-1,0],[0,1],[0,-1]]
 
 for(let m of moves){
 
@@ -230,19 +265,17 @@ let nc=c+m[1]
 
 if(valid(nr,nc,visited)){
 
-let g=path.length
-let h=Math.abs(goal[0]-nr)+Math.abs(goal[1]-nc)
-let f=g+h
+visited.add(nr+","+nc)
 
 let next=getCell(nr,nc)
 next.classList.add("visited")
 
-await sleep(10)
+await sleep(speed)
 
 open.push({
 pos:[nr,nc],
 path:[...path,[nr,nc]],
-f:f
+g:current.g+1
 })
 
 }

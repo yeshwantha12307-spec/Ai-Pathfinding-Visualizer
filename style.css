@@ -1,8 +1,14 @@
 body{
-font-family:Arial;
+font-family:Arial, Helvetica, sans-serif;
 text-align:center;
 background:#111;
 color:white;
+margin:0;
+padding:0;
+}
+
+h1{
+margin-top:20px;
 }
 
 .controls{
@@ -10,24 +16,38 @@ margin:20px;
 }
 
 button,select{
-padding:10px;
-margin:5px;
+padding:10px 14px;
+margin:6px;
 border:none;
-border-radius:5px;
+border-radius:6px;
 font-size:14px;
+outline:none;
 }
 
 button{
 background:#00adb5;
 color:white;
 cursor:pointer;
+transition:0.2s;
+}
+
+button:hover{
+background:#00cfd8;
+transform:scale(1.05);
+}
+
+select{
+background:#222;
+color:white;
 }
 
 #grid{
 display:grid;
 grid-template-columns:repeat(20,30px);
+grid-template-rows:repeat(20,30px);
 justify-content:center;
 margin-top:20px;
+gap:1px;
 }
 
 .cell{
@@ -35,10 +55,17 @@ width:30px;
 height:30px;
 border:1px solid #222;
 background:#1a1a1a;
+transition:0.15s;
+}
+
+.cell:hover{
+background:#2b2b2b;
 }
 
 .start{background:#00ff88;}
 .goal{background:#ff3b3b;}
 .wall{background:black;}
 .visited{background:#3fa7ff;}
-.path{background:#ffd166;}
+.path{
+background:linear-gradient(45deg,#ffd166,#ff9f1c);
+}
